@@ -1,495 +1,112 @@
-# ClandBus ERP Integration Platform
-
-<img src="./frontend/clandbus-dashboard/public/logo.ico" width="120" alt="ClandBus ERP Logo">
-<p align="center">
-  <strong>Acumatica ERP Integration Dashboard</strong>
+<p align="right">
+  <a href="./README.md">English</a> · <a href="./README.es.md">Español</a>
 </p>
 
-<p align="center">
-  Plataforma empresarial desarrollada con Angular y ASP.NET Core para integración con Acumatica ERP.
-</p>
+# ClandBus · Acumatica API Technical Assessment
 
----
+![Angular](https://img.shields.io/badge/Angular-20-DD0031?logo=angular&logoColor=white)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-8-512BD4?logo=dotnet&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Status](https://img.shields.io/badge/status-technical_PoC-f59e0b)
 
-# Descripción General
+A full-stack proof of concept created as a **technical assessment** to explore the Acumatica REST API and present sales-order data in an operational dashboard. The project demonstrates the integration flow end to end; it is not presented as a production platform.
 
-Este proyecto implementa una integración completa con Acumatica ERP utilizando Angular para el frontend y ASP.NET Core para el backend.
+## What it demonstrates
 
-La aplicación permite:
+- Runtime authentication against an Acumatica instance.
+- ERP session-cookie handling through an ASP.NET Core intermediary API.
+- Sales-order retrieval and dashboard metrics.
+- Search, status filters, and configurable visible rows.
+- Description updates and the `Remove Hold` action.
+- Loading states, feedback notifications, responsive UI, and explicit logout.
+- Separation between the Angular client and ERP-specific communication.
 
-* Iniciar sesión contra Acumatica ERP
-* Mantener sesiones ERP activas mediante cookies
-* Consultar órdenes de venta
-* Actualizar órdenes directamente desde la interfaz
-* Ejecutar acciones ERP como Remove Hold
-* Cerrar sesiones ERP correctamente
-* Visualizar información mediante un dashboard empresarial
+## Architecture
 
-La arquitectura fue diseñada con enfoque empresarial, separando responsabilidades entre frontend, backend e integración ERP.
-
----
-
-# Arquitectura del Proyecto
-
-```text
-Angular Frontend
-        ↓
-LoginComponent
-        ↓
-DashboardComponent
-        ↓
-AcumaticaService (Angular)
-        ↓
-ASP.NET Core API
-        ↓
-AcumaticaService (C#)
-        ↓
-Acumatica ERP REST API
+```mermaid
+flowchart LR
+    UI[Angular dashboard] --> API[ASP.NET Core API]
+    API --> SESSION[HTTP client + session cookies]
+    SESSION --> ERP[Acumatica REST API]
 ```
 
----
+The browser never calls Acumatica directly. The backend encapsulates authentication, cookies, ERP endpoints, response mapping, and error boundaries.
 
-# Tecnologías Utilizadas
+## Technology
 
-## Frontend
+| Layer | Technology |
+| --- | --- |
+| Frontend | Angular 20, TypeScript, SCSS, standalone components, HttpClient |
+| Backend | ASP.NET Core 8, C#, dependency injection, HttpClient, CookieContainer |
+| Integration | Acumatica REST API, Default endpoint `24.200.001` |
 
-* Angular 20
-* TypeScript
-* SCSS
-* Standalone Components
-* HttpClient
+## Internal API
 
-## Backend
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/Acumatica/login` | Start the ERP session with credentials supplied at runtime |
+| `GET` | `/api/Acumatica/orders` | Retrieve sales orders |
+| `POST` | `/api/Acumatica/update-order` | Update an order description |
+| `POST` | `/api/Acumatica/remove-hold` | Remove an order hold |
+| `POST` | `/api/Acumatica/logout` | Close the ERP session |
+| `GET` | `/api/Health` | Check API availability |
 
-* ASP.NET Core 9
-* C#
-* REST API
-* HttpClient
-* CookieContainer
-* Dependency Injection
+## Run locally
 
-## ERP
+### 1. Configure the backend
 
-* Acumatica REST API
+Copy the example file and replace only the local value:
 
----
-
-# Estructura del Proyecto
-
-## Frontend
-
-```text
-frontend/
- ├── src/
- │    ├── app/
- │    │    ├── core/
- │    │    │    └── services/
- │    │    │         └── acumatica.service.ts
- │    │    │
- │    │    ├── features/
- │    │    │    ├── dashboard/
- │    │    │    └── login/
- │    │    │
- │    │    └── shared/
- │    │         └── components/
- │    │
- │    └── public/
- │         └── logo.ico
+```powershell
+cd backend/ClandbusERPIntegration/ClandbusERPIntegration
+Copy-Item appsettings.Development.example.json appsettings.Development.json
 ```
 
-## Backend
+Set `Acumatica:BaseUrl` to a test instance. Keep the resulting development file untracked. You may use [.NET user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) instead.
 
-```text
-backend/
- ├── Controllers/
- ├── DTOs/
- ├── Interfaces/
- ├── Services/
- ├── Configurations/
- └── Program.cs
-```
+### 2. Start the API
 
----
-
-# Backend Intermediary Layer
-
-El frontend no consume Acumatica ERP directamente.
-
-Se implementó una capa intermedia en ASP.NET Core encargada de:
-
-* Manejar autenticación ERP
-* Mantener sesiones activas
-* Gestionar cookies
-* Centralizar integración ERP
-* Manejar errores
-* Encapsular endpoints ERP
-
-Esto permite una arquitectura más segura y mantenible.
-
----
-
-# Endpoints Internos
-
-## Login ERP
-
-```http
-POST /api/Acumatica/login
-```
-
-Inicia sesión contra Acumatica ERP y genera la sesión activa.
-
----
-
-## Obtener órdenes
-
-```http
-GET /api/Acumatica/orders
-```
-
-Obtiene órdenes de venta desde Acumatica ERP.
-
----
-
-## Actualizar orden
-
-```http
-POST /api/Acumatica/update-order
-```
-
-Actualiza información de órdenes desde el dashboard.
-
----
-
-## Remove Hold
-
-```http
-POST /api/Acumatica/remove-hold
-```
-
-Ejecuta la acción Remove Hold sobre órdenes ERP.
-
----
-
-## Logout ERP
-
-```http
-POST /api/Acumatica/logout
-```
-
-Finaliza correctamente la sesión ERP.
-
----
-
-# Flujo de Integración ERP
-
-## 1. Inicio de sesión
-
-El usuario ingresa sus credenciales desde el modal de login.
-
----
-
-## 2. Backend autentica contra ERP
-
-ASP.NET Core consume:
-
-```http
-/entity/auth/login
-```
-
----
-
-## 3. Acumatica genera cookies de sesión
-
-La sesión ERP se mantiene mediante `CookieContainer`.
-
----
-
-## 4. Requests posteriores reutilizan sesión
-
-Las siguientes peticiones utilizan la misma sesión ERP activa:
-
-* Consulta de órdenes
-* Actualización de órdenes
-* Remove Hold
-* Logout
-
----
-
-## 5. Logout ERP
-
-La sesión es destruida correctamente mediante:
-
-```http
-/entity/auth/logout
-```
-
----
-
-# Login ERP
-
-La autenticación fue implementada mediante un modal desacoplado del dashboard principal.
-
-## Características
-
-* Login manual
-* Validación de campos
-* Manejo de errores
-* Modal reutilizable
-* Diseño empresarial
-* Integración ERP en tiempo real
-
----
-
-# Manejo de Sesión ERP
-
-Uno de los puntos más importantes del proyecto fue mantener la sesión ERP activa entre peticiones.
-
-Para resolver esto se implementó:
-
-## CookieContainer
-
-Permite mantener cookies ERP activas.
-
----
-
-## withCredentials
-
-El frontend envía credenciales correctamente entre dominios.
-
----
-
-## Singleton Service
-
-El servicio ERP se registró como Singleton para mantener persistencia de sesión.
-
----
-
-## Configuración CORS
-
-El backend permite credenciales cross-origin entre Angular y ASP.NET Core.
-
----
-
-# Dashboard Empresarial
-
-El frontend fue diseñado para simular una interfaz empresarial moderna enfocada en experiencia de usuario.
-
-## Funcionalidades principales
-
-* Panel de estado ERP
-* Estadísticas dinámicas
-* Tabla de órdenes
-* Búsqueda en tiempo real
-* Filtro por estado
-* Control de registros visibles
-* Modales de edición
-* Notificaciones visuales
-* Loading overlays
-* Diseño responsive
-
----
-
-# Tabla de Órdenes
-
-La tabla principal incluye múltiples funcionalidades dinámicas.
-
-## Búsqueda en tiempo real
-
-Permite buscar órdenes por:
-
-* Número de orden
-* Cliente
-* Descripción
-* Estado
-
----
-
-## Filtro por estado
-
-El usuario puede filtrar órdenes por:
-
-* Open
-* Completed
-* On Hold
-* Invoiced
-
----
-
-## Control de registros visibles
-
-La tabla permite mostrar:
-
-* 5 registros
-* 10 registros
-* 20 registros
-* 50 registros
-* Todos los registros
-
----
-
-## Indicadores visuales
-
-Cada estado posee estilos visuales específicos para mejorar legibilidad y experiencia de usuario.
-
----
-
-# Actualización de Órdenes
-
-La aplicación permite modificar órdenes directamente desde la interfaz.
-
-## Funcionalidad implementada
-
-* Apertura de modal
-* Modificación de descripción
-* Actualización ERP
-* Refresco visual
-* Confirmación de operación
-
----
-
-# Remove Hold
-
-La solución implementa la acción requerida por Acumatica ERP.
-
-## Flujo
-
-* Detectar órdenes On Hold
-* Ejecutar acción ERP
-* Actualizar estado visual
-* Refrescar dashboard
-
----
-
-# Logout ERP
-
-La aplicación implementa cierre de sesión ERP para evitar sesiones huérfanas.
-
-## Beneficios
-
-* Mejor control de sesión
-* Limpieza de conexión
-* Buenas prácticas empresariales
-
----
-
-# Manejo de Errores
-
-La aplicación implementa manejo visual de errores y estados.
-
-## Casos manejados
-
-* Login inválido
-* ERP no disponible
-* Error de red
-* Sesión expirada
-* Error actualización
-* Error Remove Hold
-
----
-
-# Decisiones Técnicas
-
-## Separación Login / Dashboard
-
-El login fue desacoplado del dashboard para:
-
-* Mejorar arquitectura
-* Separar responsabilidades
-* Facilitar mantenimiento
-* Mejorar escalabilidad
-
----
-
-## Backend como capa intermedia
-
-El backend centraliza completamente la comunicación ERP.
-
-Beneficios:
-
-* Seguridad
-* Control de sesión
-* Encapsulación
-* Manejo de errores
-* Mejor mantenibilidad
-
----
-
-## Arquitectura Standalone
-
-Angular fue implementado utilizando Standalone Components para mantener una arquitectura más moderna y modular.
-
----
-
-# Instalación
-
-# Backend
-
-```bash
-cd backend/ClandbusERPIntegration
-```
-
-```bash
+```powershell
 dotnet restore
-```
-
-```bash
 dotnet run
 ```
 
-Backend:
+The launch profile exposes the local API documented by Swagger in Development.
 
-```text
-https://localhost:7004
+### 3. Start the Angular client
+
+```powershell
+cd frontend/clandbus-dashboard
+npm ci
+npm start
 ```
 
----
+Open `http://localhost:4200`. The frontend currently expects the API at `https://localhost:7004/api/Acumatica`.
 
-# Frontend
+## Security and scope
 
-```bash
-cd frontend
+- No credentials belong in source control; ERP credentials are entered at runtime.
+- Sensitive login payloads and ERP responses are not written to application logs.
+- HTTPS certificate validation remains enabled.
+- Use a dedicated test tenant and least-privilege account.
+- The current in-memory ERP session is intended for a **single-user demonstration**. A multi-user release would require per-user session isolation, application authentication/authorization, centralized secret management, auditing, rate limiting, and integration tests against a controlled environment.
+- A previous development configuration existed in Git history. If any real credential was ever used there, it must be rotated; deleting the current file does not erase repository history.
+
+See [SECURITY.md](./SECURITY.md) for the handling rules and production gaps.
+
+## Validation
+
+The repository can be validated without an ERP connection by building both applications:
+
+```powershell
+dotnet build backend/ClandbusERPIntegration/ClandbusERPIntegration.sln
+npm --prefix frontend/clandbus-dashboard run build
 ```
 
-```bash
-npm install
-```
+End-to-end ERP behavior requires an authorized Acumatica test instance and cannot be reproduced with public credentials.
 
-```bash
-ng serve
-```
+## Author
 
-Frontend:
+Developed by [Javier Solís](https://github.com/Polar2565) as a technical assessment and portfolio case study.
 
-```text
-http://localhost:4200
-```
-
----
-
-# Configuración
-
-Archivo ejemplo:
-
-```json
-{
-  "Acumatica": {
-    "BaseUrl": "https://your-acumatica-instance.com/"
-  }
-}
-```
-
----
-
-# Seguridad
-
-El proyecto no incluye:
-
-* Credenciales reales
-* Variables sensibles
-* Información privada ERP
-
----
-
-# Autor
-
-Javier Solís
+Acumatica is a trademark of its respective owner. This independent project is not an official Acumatica product.

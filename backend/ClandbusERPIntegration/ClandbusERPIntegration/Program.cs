@@ -10,8 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 // CONFIGURATION
 // ======================================
 
-builder.Services.Configure<AcumaticaSettings>(
-    builder.Configuration.GetSection("Acumatica"));
+builder.Services
+    .AddOptions<AcumaticaSettings>()
+    .Bind(builder.Configuration.GetSection("Acumatica"))
+    .Validate(
+        settings => Uri.TryCreate(settings.BaseUrl, UriKind.Absolute, out _),
+        "Acumatica:BaseUrl must be an absolute URL.")
+    .ValidateOnStart();
 
 // ======================================
 // ERP SESSION / HTTP CLIENT
@@ -37,11 +42,7 @@ builder.Services.AddSingleton<IAcumaticaService>(
             {
                 CookieContainer = cookies,
 
-                UseCookies = true,
-
-                ServerCertificateCustomValidationCallback =
-                    HttpClientHandler
-                        .DangerousAcceptAnyServerCertificateValidator
+                UseCookies = true
             };
 
         var httpClient =
