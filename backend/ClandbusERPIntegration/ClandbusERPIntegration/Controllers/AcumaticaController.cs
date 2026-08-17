@@ -39,11 +39,11 @@ namespace ClandbusERPIntegration.Controllers
                     message = "ERP session started successfully"
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new
                 {
-                    error = ex.Message
+                    error = "Unexpected integration error"
                 });
             }
         }
@@ -59,11 +59,11 @@ namespace ClandbusERPIntegration.Controllers
 
                 return Ok(orders);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new
                 {
-                    error = ex.Message
+                    error = "Unexpected integration error"
                 });
             }
         }
@@ -91,11 +91,11 @@ namespace ClandbusERPIntegration.Controllers
                     message = "Order updated successfully"
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new
                 {
-                    error = ex.Message
+                    error = "Unexpected integration error"
                 });
             }
         }
@@ -124,11 +124,11 @@ namespace ClandbusERPIntegration.Controllers
                         "Remove Hold executed successfully"
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new
                 {
-                    error = ex.Message
+                    error = "Unexpected integration error"
                 });
             }
         }
@@ -146,11 +146,11 @@ namespace ClandbusERPIntegration.Controllers
                     message = "Logout successful"
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new
                 {
-                    error = ex.Message
+                    error = "Unexpected integration error"
                 });
             }
         }
